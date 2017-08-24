@@ -14,11 +14,9 @@ using System.Threading;				// Watki Thread
 
 namespace Modbus_Programmer
 {
-
-	// delegate void rx_ext_funct(byte[] buf, int size);
 	delegate void rx_funct_process();
-	
-	enum STATUS { IDLE, FRAME_OK, TIMEOUT };
+
+	// enum STATUS { IDLE, FRAME_OK, TIMEOUT };
 
 	class SerialPortGeneric
 	{
@@ -28,9 +26,13 @@ namespace Modbus_Programmer
 		private System.Timers.Timer timer;
 		private Semaphore semafor = null;
 
-		private STATUS rx_status = STATUS.IDLE;
+		// private STATUS rx_status = STATUS.IDLE;
+
+		// rx data
+		private Queue<byte> rx_buffer = null;		// Kolejka odbiorcza
 
 		// private rx_ext_funct rx_funct;
+
 
 		// ***************************************************************************
 		public SerialPortGeneric(ComboBox combo)
@@ -48,14 +50,36 @@ namespace Modbus_Programmer
 
 
 		// ***************************************************************************
+		// Analizowanie ramki wysylanej, w generic - przezroczyste
+		public virtual byte[] AnaliseTxFrame(byte[] buf)
+		{
+			return buf;		// nic nie robi
+
+		}	// AnaliseTxFrame
+
+
+		// ***************************************************************************
+		// Analizowanie wamki odebranej
+		// ret 1 - frame ok, 0 - error
+		public virtual bool AnaliseRxFrame(byte[] buf)
+		{
+			return true;
+
+		}	// AnaliseRxFrame
+
+
+		// ***************************************************************************
 		// public virtual bool ReceiveFrame(int timeout, byte[] buf, int size)
 		// ret true - frame received, false - timeout
-		public virtual bool ReceiveFrame(int timeout)
+		public bool ReceiveFrame(int timeout, out byte [] rx_buf, out int rx_size)
 		{
-			rx_status = STATUS.IDLE;
+			rx_buf = null;
+			rx_size = 0;
+
+			// rx_status = STATUS.IDLE;
+			rx_buffer = new Queue<byte>();
 
 			timer = new System.Timers.Timer();
-			// timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimedEvent);
 			timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimerEvent);
 			timer.Interval = timeout;
 			timer.Enabled = true;
@@ -63,11 +87,15 @@ namespace Modbus_Programmer
 			semafor = new Semaphore(0, 1);		// arg 1 - ile miejsce jest wolnych, arg 2 - ile jest max miejsc - (0,1) - WaitOne - czeka az bedzie realise
 			semafor.WaitOne();
 
-			if (rx_status == STATUS.FRAME_OK)
+			// if (rx_status == STATUS.FRAME_OK)
+			if (rx_buffer.Count != 0)
 			{
-				// TODO podstawieniedanych odbiorczych
-
-				return true;
+				rx_buf = rx_buffer.ToArray();
+				rx_size = rx_buffer.Count;
+				if (AnaliseRxFrame(rx_buf) == true)
+					return true;
+				else
+					return false;		// crc error
 			}
 			else
 				return false;
@@ -76,11 +104,30 @@ namespace Modbus_Programmer
 
 
 		// ***************************************************************************
+		// Wewnetrzny Event odbioru Rx
+		void rx_handler_funct(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
+		{
+			int rx_size = serial.BytesToRead;
+			byte[] buffer = new byte[rx_size];
+
+			int iReaded = serial.Read(buffer, 0, rx_size);
+
+			for (int i = 0; i < rx_size; i++)
+			{
+				rx_buffer.Enqueue(buffer[i]);
+			}
+
+			// rx_funct(buffer, rx_size);
+
+		}	// rx_handler_funct
+
+
+		// ***************************************************************************
 		// Event doliczenie timera
 		void OnTimerEvent(object sender, System.Timers.ElapsedEventArgs e)
 		{
-			timer.Enabled = false;
-			rx_status = STATUS.TIMEOUT;
+			timer.Enabled = false;				// wylaczenie timera
+			// rx_status = STATUS.TIMEOUT;
 			semafor.Release();
 
 		}	// ReceiveFrame
@@ -109,25 +156,12 @@ namespace Modbus_Programmer
 
 
 		// ***************************************************************************
-		public virtual void SendFrame(byte[] buf, int size, bool wait)
+		public void SendFrame(byte[] buf, int size, bool wait)
 		{
+			buf = AnaliseTxFrame(buf);
 			serial.Write(buf, 0, size);
 
 		}	// SendFrame
-
-		// ***************************************************************************
-		// Wewnetrzny Event odbioru Rx
-		void rx_handler_funct(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
-		{
-
-			int rx_size = serial.BytesToRead;
-			byte[] buffer = new byte[rx_size];
-
-			int iReaded = serial.Read(buffer, 0, rx_size);
-
-			// rx_funct(buffer, rx_size);
-
-		}	// rx_handler_funct
 
 
 		// ***************************************************************************

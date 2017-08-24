@@ -44,25 +44,41 @@ namespace Modbus_Programmer
 		// ***************************************************************
 		private void button1_Click(object sender, RoutedEventArgs e)
 		{
-			byte[] buf = {1, 2, 3, 4, 5};
-
 			KamSerial.PreparePort();
-
 			KamSerial.BaudRate = 19200;
-			KamSerial.SendFrame(buf, 5, false);
-
-
-			KamSerial.ReceiveFrame(100);
+			KamSerial.TxRxStartProcess(TxRxProcess);
 
 		}	// AppInit
 
 
+		// ***************************************************************************
+		private void TxRxProcess()
+		{
+			byte[] tx_buf = {1, 2, 3, 4};
+			byte[] rx_buf;
+			int rx_size;
+
+			KamSerial.SendFrame(tx_buf, 4, false);
+			bool ret = KamSerial.ReceiveFrame(100, out rx_buf, out rx_size);
+
+		}	// TxRxProcess
+
+
+		// ***************************************************************************
+		private void TxRxEnd()
+		{
+
+		}	// TxRxEnd
+
+
+		/*
 		// ***************************************************************************
 		void rx_function(byte [] buf, int size)
 		{
 			// throw new NotImplementedException();
 
 		}	// SerialPort
+		*/
 
 	}
 
