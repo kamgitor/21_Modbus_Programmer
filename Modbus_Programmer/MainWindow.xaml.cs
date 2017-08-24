@@ -19,7 +19,7 @@ namespace Modbus_Programmer
 	/// </summary>
 	public partial class Window1 : Window
 	{
-		SerialPort KamSerial;
+		SerialPortGeneric KamSerial;
 
 		// ***************************************************************
 		public Window1()
@@ -34,7 +34,7 @@ namespace Modbus_Programmer
 		// ***************************************************************
 		public void AppInit()
 		{
-			KamSerial = new SerialPort(comboBoxPorts, rx_function);
+			KamSerial = new SerialPortGeneric(comboBoxPorts);
 
 			
 
@@ -49,8 +49,7 @@ namespace Modbus_Programmer
 			KamSerial.PreparePort();
 
 			KamSerial.BaudRate = 19200;
-			bool isopen = KamSerial.IsOpen;
-			KamSerial.Write(buf, 0, 5);
+			KamSerial.SendFrame(buf, 5, false);
 
 		}	// AppInit
 
