@@ -17,6 +17,8 @@ namespace Modbus_Programmer
 
 	// delegate void rx_ext_funct(byte[] buf, int size);
 	delegate void rx_funct_process();
+	
+	enum STATUS { IDLE, FRAME_OK, TIMEOUT };
 
 	class SerialPortGeneric
 	{
@@ -25,6 +27,8 @@ namespace Modbus_Programmer
 		private rx_funct_process rx_user_process;
 		private System.Timers.Timer timer;
 		private Semaphore semafor = null;
+
+		private STATUS rx_status = STATUS.IDLE;
 
 		// private rx_ext_funct rx_funct;
 
@@ -44,16 +48,29 @@ namespace Modbus_Programmer
 
 
 		// ***************************************************************************
-		public virtual bool ReceiveFrame(int timeout, byte[] buf, int size)
+		// public virtual bool ReceiveFrame(int timeout, byte[] buf, int size)
+		// ret true - frame received, false - timeout
+		public virtual bool ReceiveFrame(int timeout)
 		{
+			rx_status = STATUS.IDLE;
+
 			timer = new System.Timers.Timer();
 			// timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimedEvent);
 			timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimerEvent);
 			timer.Interval = timeout;
 			timer.Enabled = true;
 
+			semafor = new Semaphore(0, 1);		// arg 1 - ile miejsce jest wolnych, arg 2 - ile jest max miejsc - (0,1) - WaitOne - czeka az bedzie realise
+			semafor.WaitOne();
 
-			return true;
+			if (rx_status == STATUS.FRAME_OK)
+			{
+				// TODO podstawieniedanych odbiorczych
+
+				return true;
+			}
+			else
+				return false;
 
 		}	// ReceiveFrame
 
@@ -63,6 +80,8 @@ namespace Modbus_Programmer
 		void OnTimerEvent(object sender, System.Timers.ElapsedEventArgs e)
 		{
 			timer.Enabled = false;
+			rx_status = STATUS.TIMEOUT;
+			semafor.Release();
 
 		}	// ReceiveFrame
 

@@ -51,6 +51,9 @@ namespace Modbus_Programmer
 			KamSerial.BaudRate = 19200;
 			KamSerial.SendFrame(buf, 5, false);
 
+
+			KamSerial.ReceiveFrame(100);
+
 		}	// AppInit
 
 
