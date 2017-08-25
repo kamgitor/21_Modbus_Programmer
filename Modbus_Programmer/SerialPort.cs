@@ -30,7 +30,6 @@ namespace Modbus_Programmer
 
 		// rx data
 		private Queue<byte> rx_buffer = null;		// Kolejka odbiorcza
-
 		// private rx_ext_funct rx_funct;
 
 
@@ -51,7 +50,7 @@ namespace Modbus_Programmer
 
 		// ***************************************************************************
 		// Analizowanie ramki wysylanej, w generic - przezroczyste
-		public virtual byte[] AnaliseTxFrame(byte[] buf)
+		protected virtual byte[] AnaliseTxFrame(byte[] buf)
 		{
 			return buf;		// nic nie robi
 
@@ -61,7 +60,7 @@ namespace Modbus_Programmer
 		// ***************************************************************************
 		// Analizowanie wamki odebranej
 		// ret 1 - frame ok, 0 - error
-		public virtual bool AnaliseRxFrame(byte[] buf)
+		protected virtual bool AnaliseRxFrame(byte[] buf)
 		{
 			return true;
 
@@ -149,8 +148,8 @@ namespace Modbus_Programmer
 			rx_user_process = rx_usr_proc;
 
 			// Thread thr = new Thread(rx_usr_proc);		// To nie chce sie kompilowac
-			Thread thr = new Thread(RxSystemProcess);
-			thr.Start();
+			Thread thd = new Thread(RxSystemProcess);
+			thd.Start();
 
 		}	// TxRxStartProcess
 
@@ -160,6 +159,16 @@ namespace Modbus_Programmer
 		{
 			buf = AnaliseTxFrame(buf);
 			serial.Write(buf, 0, size);
+			int timer = 0;
+
+			/*
+			// To nie dziala
+			while (serial.BytesToWrite != 0)
+			{
+				++timer;
+				Thread.Sleep(1);
+			}
+			 * */
 
 		}	// SendFrame
 
