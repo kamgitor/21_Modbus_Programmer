@@ -20,18 +20,17 @@ namespace Modbus_Programmer
 
 	class SerialPortGeneric
 	{
-		private ComboBox combobox;
-		private SerialPort serial;
-		private rx_funct_process rx_user_process;
-		private System.Timers.Timer timer;
-		private Semaphore semafor = null;
+		protected ComboBox combobox;
+		protected SerialPort serial;
+		protected rx_funct_process rx_user_process;
+		protected System.Timers.Timer timer;
+		protected Semaphore semafor = null;
 
 		// private STATUS rx_status = STATUS.IDLE;
 
 		// rx data
-		private Queue<byte> rx_buffer = null;		// Kolejka odbiorcza
+		protected Queue<byte> rx_buffer = null;		// Kolejka odbiorcza
 		// private rx_ext_funct rx_funct;
-
 
 		// ***************************************************************************
 		public SerialPortGeneric(ComboBox combo)
@@ -104,7 +103,7 @@ namespace Modbus_Programmer
 
 		// ***************************************************************************
 		// Wewnetrzny Event odbioru Rx
-		void rx_handler_funct(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
+		protected void rx_handler_funct(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
 		{
 			int rx_size = serial.BytesToRead;
 			byte[] buffer = new byte[rx_size];
@@ -190,7 +189,7 @@ namespace Modbus_Programmer
 
 		// ***************************************************************************
 		// Wsadzenie istniejacych portow do comboboxa
-		private void InitSerialComboBox()
+		protected void InitSerialComboBox()
 		{
 			string [] portNames = SerialPort.GetPortNames();
 

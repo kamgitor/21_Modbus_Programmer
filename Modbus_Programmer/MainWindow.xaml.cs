@@ -19,7 +19,8 @@ namespace Modbus_Programmer
 	/// </summary>
 	public partial class Window1 : Window
 	{
-		SerialPortGeneric KamSerial;
+		// SerialPortGeneric KamSerial;
+		Rs485 KamSerial;
 
 		// ***************************************************************
 		public Window1()
@@ -34,7 +35,8 @@ namespace Modbus_Programmer
 		// ***************************************************************
 		public void AppInit()
 		{
-			KamSerial = new SerialPortGeneric(comboBoxPorts);
+			// KamSerial = new SerialPortGeneric(comboBoxPorts);
+			KamSerial = new Rs485(comboBoxPorts);
 
 			
 
