@@ -36,7 +36,7 @@ namespace Modbus_Programmer
 			ret_buf[buf.Length] = crc_l;
 			ret_buf[buf.Length + 1] = crc_h;
 
-			return ret_buf;;		// nic nie robi
+			return ret_buf;			// nic nie robi
 
 		}	// AnaliseTxFrame
 
@@ -46,7 +46,15 @@ namespace Modbus_Programmer
 		// ret 1 - frame ok, 0 - error
 		override protected bool AnaliseRxFrame(byte[] buf)
 		{
-			return true;
+			ResetCrc();
+
+			for (int i = 0; i < buf.Length; i++)
+				AddByteCrc(buf[i]);
+
+			if ((crc_l == 0) && (crc_h == 0))
+				return true;
+			else
+				return false;
 
 		}	// AnaliseRxFrame
 

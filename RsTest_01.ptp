@@ -3,9 +3,9 @@ VERSION
 
 COMMSETTINGS
 0
-COM5
+COM4
 COM2
-19200
+115200
 2
 63
 4
@@ -26,6 +26,27 @@ SEND
 0
 Test 1
 05 06 07 08 09 0A 0B 0C 0D 0E 0F 11 12 13 14 15 16 17 18
+0
+5
+
+SEND
+1
+Holding adr FF OK
+FF 03 00 00 00 03 10 15
+0
+5
+
+SEND
+2
+Holding Adr1 OK
+01 03 00 00 00 03 05 CB
+0
+5
+
+SEND
+3
+Holding Adr1 z plc Dziala
+01 03 00 F0 00 10 44 35
 0
 5
 
