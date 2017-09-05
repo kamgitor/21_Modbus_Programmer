@@ -1,10 +1,22 @@
 ﻿<Window x:Class="Modbus_Programmer.Window1"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Modbus Module Programmer" Height="300" Width="300">
+    Title="Programator Modułów Modbus RTU" Height="451" Width="284" ResizeMode="NoResize">
     <Grid>
-		<Label Height="28" Margin="22,29,0,0" Name="label1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="63">Port RS</Label>
-		<ComboBox Height="23" Margin="104,29,54,0" Name="comboBoxPorts" VerticalAlignment="Top" />
-		<Button Height="23" HorizontalAlignment="Right" Margin="0,0,54,72" Name="button1" VerticalAlignment="Bottom" Width="75" Click="button1_Click">Button</Button>
+		<Label Height="28" Margin="17,19,0,0" Name="label1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="51">Port RS</Label>
+		<ComboBox Height="23" Margin="71,19,0,0" Name="comboBoxPorts" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
+		<Button Height="23" Margin="71,65,0,0" Name="button1" VerticalAlignment="Top" Click="button1_Click" HorizontalAlignment="Left" Width="120">Szukaj modułów</Button>
+		<ComboBox Margin="71,175,0,0" Name="ComboBoxBaud" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120">
+			<ComboBoxItem>2400</ComboBoxItem>
+			<ComboBoxItem>9600</ComboBoxItem>
+			<ComboBoxItem>19200</ComboBoxItem>
+			<ComboBoxItem>57600</ComboBoxItem>
+			<ComboBoxItem>115200</ComboBoxItem>
+		</ComboBox>
+		<TextBox Height="23" Margin="71,210,0,0" Name="TextBoxAdres" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
+		<ProgressBar Height="18" Margin="27,109,0,0" Name="ProgressBarRead" VerticalAlignment="Top" HorizontalAlignment="Left" Width="208" />
+		<ProgressBar Height="18" Margin="29,318,0,0" Name="ProgressBarWrite" VerticalAlignment="Top" HorizontalAlignment="Left" Width="206" />
+		<Button Height="23" Margin="71,277,0,0" Name="button_saveParams" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" Click="Button_SaveParams_Click">Zapis parametrów</Button>
+		<GroupBox Header="Parametry modułu" Margin="29,146,0,0" Name="ModuleGroupBox" HorizontalAlignment="Left" Width="206" Height="109" VerticalAlignment="Top" />
 	</Grid>
 </Window>

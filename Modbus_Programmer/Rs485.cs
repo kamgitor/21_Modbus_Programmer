@@ -14,6 +14,7 @@ namespace Modbus_Programmer
 		private byte crc_l;
 		private byte crc_h;
 
+		// Konstruktor podobno nie jest dziedziczony - taka konstrukcja zeby byl dziwdziczony
 		public Rs485(ComboBox combo) : base(combo)
 		{
 

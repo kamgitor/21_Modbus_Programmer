@@ -12,6 +12,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using System.Threading;				// Watki Thread
+using System.Windows.Threading;
+
 namespace Modbus_Programmer
 {
 	/// <summary>
@@ -28,6 +31,8 @@ namespace Modbus_Programmer
 		public Window1()
 		{
 			InitializeComponent();
+
+			InitControlHide();
 
 			AppInit();
 		
@@ -48,17 +53,69 @@ namespace Modbus_Programmer
 		// ***************************************************************
 		private void button1_Click(object sender, RoutedEventArgs e)
 		{
-			KamSerial.PreparePort();
-			KamSerial.BaudRate = 19200;
-			// KamSerial.BaudRate = 115200;
-			KamSerial.TxRxStartProcess(TxRxProcess);
+			if (comboBoxPorts.SelectedIndex != -1)
+			{
+				KamSerial.PreparePort();
+				KamSerial.BaudRate = 19200;
+				// KamSerial.BaudRate = 115200;
+				KamSerial.TxRxStartProcess(TxRxProcess);
+			}
+			else
+				MessageBox.Show("Wybierz port szeregowy", "Informacja");
 
 		}	// AppInit
 
 
 		// ***************************************************************************
+		// na starcie ukrycie kontrolek
+		private void InitControlHide()
+		{
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
+			{
+				ModuleGroupBox.Visibility = Visibility.Hidden;
+				ComboBoxBaud.Visibility = Visibility.Hidden;
+				TextBoxAdres.Visibility = Visibility.Hidden;
+				button_saveParams.Visibility = Visibility.Hidden;
+				ProgressBarWrite.Visibility = Visibility.Hidden;
+				ProgressBarRead.Visibility = Visibility.Hidden;
+			});
+
+		}	// InitControlHide
+
+
+		// ***************************************************************************
+		private void HideProgressBars()
+		{
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
+			{
+				ProgressBarWrite.Visibility = Visibility.Hidden;
+				ProgressBarRead.Visibility = Visibility.Hidden;
+			});
+
+		}	// HideProgressBars
+
+		// ***************************************************************************
+		private void PresentReadParams()
+		{
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
+			{
+				ModuleGroupBox.Visibility = Visibility.Visible;
+				ComboBoxBaud.Visibility = Visibility.Visible;
+				TextBoxAdres.Visibility = Visibility.Visible;
+				button_saveParams.Visibility = Visibility.Visible;
+
+				ComboBoxBaud.SelectedIndex = rs_speed;
+				TextBoxAdres.Text = rs_adres.ToString();
+			});
+
+		}	// PresentReadParams
+
+
+		// ***************************************************************************
 		private void TxRxProcess()
 		{
+			bool success = true;
+
 			// #define		MODBUS_BAUD_DEFAULT				1		// 9600
 			// #define		MODBUS_ADDRESS_DEFAULT			1
 
@@ -72,14 +129,24 @@ namespace Modbus_Programmer
 			// 7		crc h
 
 
-			if (AskModbusModule(2400) == false)
-				if (AskModbusModule(9600) == false)
-					if (AskModbusModule(19200) == false)
-						if (AskModbusModule(57600) == false)
-							AskModbusModule(115200);
+			if (AskModbusModule(2400, 20) == false)
+				if (AskModbusModule(9600, 40) == false)
+					if (AskModbusModule(19200, 60) == false)
+						if (AskModbusModule(57600, 80) == false)
+							if (AskModbusModule(115200, 100) == false)
+								success = false;
 
 
-
+			if (success)
+			{
+				PresentReadParams();
+				HideProgressBars();
+			}
+			else
+			{
+				MessageBox.Show("Nie znaleziono urządzeń", "Informacja");
+				InitControlHide();
+			}
 
 /*
 			if (ret == false)
@@ -99,13 +166,20 @@ namespace Modbus_Programmer
 
 		// ***************************************************************************
 		// private bool SendReceiveFrame(byte [] tx_buf, int baud)
-		private bool AskModbusModule(int baud)
+		private bool AskModbusModule(int baud, byte progress)
 		{
 			bool ret;
 			byte[] rx_buf;
 			int rx_size;
 			byte[] tx_buf = { 255, 3, 0, 0, 0, 3 };
-			
+
+
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,(ThreadStart)delegate()
+			{
+				ProgressBarRead.Visibility = Visibility.Visible;
+				ProgressBarRead.Value = progress;
+			});
+
 			rs_speed = 0xFF;
 			rs_adres = 0xFF;
 
@@ -122,13 +196,13 @@ namespace Modbus_Programmer
 				return false;
 
 		}	// SendReceiveFrame
-
+		
 
 		// ***************************************************************************
-		private void TxRxEnd()
+		private void Button_SaveParams_Click(object sender, RoutedEventArgs e)
 		{
 
-		}	// TxRxEnd
+		}	// Button_SaveParams_Click
 
 
 		/*
