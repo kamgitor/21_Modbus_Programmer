@@ -25,7 +25,13 @@ namespace Modbus_Programmer
 		// SerialPortGeneric KamSerial;
 		Rs485 KamSerial;
 		byte rs_speed;
-		int rs_adres;
+		byte rs_new_speed;
+		ushort rs_adres;
+
+		private readonly int[] baud_tab = { 2400, 9600, 19200, 57600, 115200 };
+		private const int MODBUS_OFFSET_OF_ADDRES = 1;
+		private const int MODBUS_OFFSET_OF_BAUD = 2;
+
 
 		// ***************************************************************
 		public Window1()
@@ -45,25 +51,57 @@ namespace Modbus_Programmer
 			// KamSerial = new SerialPortGeneric(comboBoxPorts);
 			KamSerial = new Rs485(comboBoxPorts);
 
-			
-
 		}	// AppInit
 
 
 		// ***************************************************************
-		private void button1_Click(object sender, RoutedEventArgs e)
+		private void Button_ReadParams_Click(object sender, RoutedEventArgs e)
 		{
+			button_ReadParams.Visibility = Visibility.Hidden;
+
 			if (comboBoxPorts.SelectedIndex != -1)
 			{
 				KamSerial.PreparePort();
-				KamSerial.BaudRate = 19200;
+				// KamSerial.BaudRate = 19200;
 				// KamSerial.BaudRate = 115200;
-				KamSerial.TxRxStartProcess(TxRxProcess);
+				KamSerial.TxRxStartProcess(ReadParamsProcess);
 			}
 			else
+			{
 				MessageBox.Show("Wybierz port szeregowy", "Informacja");
+				button_ReadParams.Visibility = Visibility.Visible;
+			}
 
 		}	// AppInit
+
+
+		// ***************************************************************************
+		private void Button_SaveParams_Click(object sender, RoutedEventArgs e)
+		{
+			button_SaveParams.Visibility = Visibility.Hidden;
+
+			if (comboBoxPorts.SelectedIndex != -1)
+			{
+				KamSerial.PreparePort();
+
+				rs_new_speed = (byte)ComboBoxBaud.SelectedIndex;
+				rs_adres = (ushort)Int32.Parse(TextBoxAdres.Text);
+
+				if ((rs_adres <= 0) || (rs_adres >= 255))
+				{
+					MessageBox.Show("Wybrany niepoprawny adres (1 - 254)", "Informacja");
+					button_SaveParams.Visibility = Visibility.Visible;
+				}
+				else
+					KamSerial.TxRxStartProcess(WriteParamsProcess);
+			}
+			else
+			{
+				MessageBox.Show("Wybierz port szeregowy", "Informacja");
+				button_SaveParams.Visibility = Visibility.Visible;
+			}
+
+		}	// Button_SaveParams_Click
 
 
 		// ***************************************************************************
@@ -75,7 +113,7 @@ namespace Modbus_Programmer
 				ModuleGroupBox.Visibility = Visibility.Hidden;
 				ComboBoxBaud.Visibility = Visibility.Hidden;
 				TextBoxAdres.Visibility = Visibility.Hidden;
-				button_saveParams.Visibility = Visibility.Hidden;
+				button_SaveParams.Visibility = Visibility.Hidden;
 				ProgressBarWrite.Visibility = Visibility.Hidden;
 				ProgressBarRead.Visibility = Visibility.Hidden;
 			});
@@ -94,6 +132,7 @@ namespace Modbus_Programmer
 
 		}	// HideProgressBars
 
+
 		// ***************************************************************************
 		private void PresentReadParams()
 		{
@@ -102,7 +141,7 @@ namespace Modbus_Programmer
 				ModuleGroupBox.Visibility = Visibility.Visible;
 				ComboBoxBaud.Visibility = Visibility.Visible;
 				TextBoxAdres.Visibility = Visibility.Visible;
-				button_saveParams.Visibility = Visibility.Visible;
+				button_SaveParams.Visibility = Visibility.Visible;
 
 				ComboBoxBaud.SelectedIndex = rs_speed;
 				TextBoxAdres.Text = rs_adres.ToString();
@@ -112,7 +151,7 @@ namespace Modbus_Programmer
 
 
 		// ***************************************************************************
-		private void TxRxProcess()
+		private void ReadParamsProcess()
 		{
 			bool success = true;
 
@@ -148,20 +187,12 @@ namespace Modbus_Programmer
 				InitControlHide();
 			}
 
-/*
-			if (ret == false)
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
 			{
-				// ret = SendReceiveFrame(tx_buf, 115200);
+				button_ReadParams.Visibility = Visibility.Visible;
+			});
 
-				KamSerial.BaudRate = 115200;	// 4
-				KamSerial.SendFrame(tx_buf, false);
-				ret = KamSerial.ReceiveFrame(100, out rx_buf, out rx_size);
-				rs_speed = 4;
-				rs_adres = (rx_buf[5] << 8) + rx_buf[6];
-			}
-*/
-
-		}	// TxRxProcess
+		}	// ReadParamsProcess
 
 
 		// ***************************************************************************
@@ -171,7 +202,7 @@ namespace Modbus_Programmer
 			bool ret;
 			byte[] rx_buf;
 			int rx_size;
-			byte[] tx_buf = { 255, 3, 0, 0, 0, 3 };
+			byte[] tx_buf = { 255, 3, 0, 0, 0, 3 };		// 255 - brodcast addres, 3 - get holding regs, 0 - adr_hi, 0 - adr_lo, 0 - size_hi, 3 - size_lo
 
 
 			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,(ThreadStart)delegate()
@@ -184,25 +215,87 @@ namespace Modbus_Programmer
 			rs_adres = 0xFF;
 
 			KamSerial.BaudRate = baud;
-			KamSerial.SendFrame(tx_buf, false);
+			KamSerial.SendFrame(tx_buf);
 			ret = KamSerial.ReceiveFrame(100, out rx_buf, out rx_size);
 			if (ret == true)
 			{
-				rs_speed = 4;
-				rs_adres = (rx_buf[5] << 8) + rx_buf[6];
+				rs_speed = rx_buf[8];
+				rs_adres = rx_buf[6];
 				return true;
 			}
 			else
 				return false;
 
 		}	// SendReceiveFrame
-		
+
 
 		// ***************************************************************************
-		private void Button_SaveParams_Click(object sender, RoutedEventArgs e)
+		private bool PresetSingleModbusRegister(int baud, ushort adr, ushort val, byte progress)
 		{
+			bool ret;
+			byte[] rx_buf;
+			int rx_size;
+			byte[] tx_buf = { 255, 6, 0, 1, 0, 0 };			// 255 - broadcast slave addres, 6 - function Preset Single Register, 0 - adr_hi, 1 - adr_lo, 0 - data_hi, 0 - data_lo
 
-		}	// Button_SaveParams_Click
+			// 16 Preset Multiple Registers		- moduly tego moga nie wspierac
+			// 06 Preset Single Register
+
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
+			{
+				ProgressBarWrite.Visibility = Visibility.Visible;
+				ProgressBarWrite.Value = progress;
+			});
+
+			tx_buf[2] = (byte)(adr >> 8);
+			tx_buf[3] = (byte)adr;
+			tx_buf[4] = (byte)(val >> 8);
+			tx_buf[5] = (byte)val;
+
+			KamSerial.BaudRate = baud;
+			
+			KamSerial.SendFrame(tx_buf);
+
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
+			{
+				ProgressBarWrite.Visibility = Visibility.Visible;
+				ProgressBarWrite.Value = progress + 25;
+			});
+
+			ret = KamSerial.ReceiveFrame(100, out rx_buf, out rx_size);
+
+			return ret;
+		
+		}	// PresetSingleModbusRegister
+
+
+		// ***************************************************************************
+		private void WriteParamsProcess()
+		{
+			bool ret;
+
+			ret = PresetSingleModbusRegister(baud_tab[rs_speed], MODBUS_OFFSET_OF_ADDRES, rs_adres, 25);
+
+			if (ret == true)
+				PresetSingleModbusRegister(baud_tab[rs_speed], MODBUS_OFFSET_OF_BAUD, rs_new_speed, 75);			// Takie troche oszukanstwo, bo ta ramka juz zmienia bauda
+																												// i odpowiedzi idzie juz po innym baudzue
+
+			if (ret == false)
+				MessageBox.Show("Nie znaleziono urządzenia", "Informacja");
+
+			
+			rs_speed = rs_new_speed;		// zeby przy zmianie adresu dzialo dwukrotne wcisniecie zapis
+
+			HideProgressBars();
+
+			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate()
+			{
+				button_SaveParams.Visibility = Visibility.Visible;
+			});
+
+		}	// WriteParamsProcess
+
+
+
 
 
 		/*

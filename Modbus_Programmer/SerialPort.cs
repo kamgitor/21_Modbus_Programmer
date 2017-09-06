@@ -154,7 +154,7 @@ namespace Modbus_Programmer
 
 
 		// ***************************************************************************
-		public void SendFrame(byte[] buf, bool wait)
+		public void SendFrame(byte[] buf)	// bool wait)
 		{
 			buf = AnaliseTxFrame(buf);
 			serial.Write(buf, 0, buf.Length);
