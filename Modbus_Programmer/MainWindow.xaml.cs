@@ -216,7 +216,7 @@ namespace Modbus_Programmer
 
 			KamSerial.BaudRate = baud;
 			KamSerial.SendFrame(tx_buf);
-			ret = KamSerial.ReceiveFrame(100, out rx_buf, out rx_size);
+			ret = KamSerial.ReceiveFrame(150, out rx_buf, out rx_size);		// 100ms
 			if (ret == true)
 			{
 				rs_speed = rx_buf[8];
