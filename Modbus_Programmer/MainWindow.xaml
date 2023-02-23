@@ -1,22 +1,29 @@
-﻿<Window x:Class="Modbus_Programmer.Window1"
+﻿<Window x:Class="CliConfigurator.Window1"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Programator Modułów Modbus RTU" Height="451" Width="284" ResizeMode="NoResize" Icon="/Modbus_Programmer;component/Connect.ico">
+    Title="CLI Configurator" Height="451" Width="324" ResizeMode="NoResize" Icon="/Modbus_Programmer;component/Connect.ico">
     <Grid>
-		<Label Height="28" Margin="17,19,0,0" Name="label1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="51">Port RS</Label>
-		<ComboBox Height="23" Margin="71,19,0,0" Name="comboBoxPorts" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
-		<Button Height="23" Margin="71,65,0,0" Name="button_ReadParams" VerticalAlignment="Top" Click="Button_ReadParams_Click" HorizontalAlignment="Left" Width="120">Szukaj modułów</Button>
-		<ComboBox Margin="71,175,0,0" Name="ComboBoxBaud" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120">
-			<ComboBoxItem>2400</ComboBoxItem>
-			<ComboBoxItem>9600</ComboBoxItem>
-			<ComboBoxItem>19200</ComboBoxItem>
-			<ComboBoxItem>57600</ComboBoxItem>
-			<ComboBoxItem>115200</ComboBoxItem>
-		</ComboBox>
-		<TextBox Height="23" Margin="71,210,0,0" Name="TextBoxAdres" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
-		<ProgressBar Height="18" Margin="27,109,0,0" Name="ProgressBarRead" VerticalAlignment="Top" HorizontalAlignment="Left" Width="208" />
-		<ProgressBar Height="18" Margin="29,318,0,0" Name="ProgressBarWrite" VerticalAlignment="Top" HorizontalAlignment="Left" Width="206" />
-		<Button Height="23" Margin="71,277,0,0" Name="button_SaveParams" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" Click="Button_SaveParams_Click">Zapis parametrów</Button>
-		<GroupBox Header="Parametry modułu" Margin="29,146,0,0" Name="ModuleGroupBox" HorizontalAlignment="Left" Width="206" Height="109" VerticalAlignment="Top" />
-	</Grid>
+        <Label Height="28" Margin="11.664,19,0,0" x:Name="label1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="51" Content="Uart 1"/>
+        <ComboBox Height="23" Margin="65.664,19,0,0" x:Name="comboBoxPorts1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
+        <Button Height="51.667" Margin="30.329,105.688,0,0" x:Name="button_ReadParams" VerticalAlignment="Top" Click="Button_SendSetOfCommand_Click" HorizontalAlignment="Left" Width="88" Content="Send set of&#xD;&#xA;commands"/>
+        <ComboBox Margin="71,239.032,0,0" Name="ComboBoxBaud" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120">
+            <ComboBoxItem>2400</ComboBoxItem>
+            <ComboBoxItem>9600</ComboBoxItem>
+            <ComboBoxItem>19200</ComboBoxItem>
+            <ComboBoxItem>57600</ComboBoxItem>
+            <ComboBoxItem>115200</ComboBoxItem>
+        </ComboBox>
+        <TextBox Height="23" Margin="71,274.032,0,0" Name="TextBoxAdres" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
+        <ProgressBar Height="18" Margin="11.664,176.367,0,0" Name="ProgressBarRead" VerticalAlignment="Top" HorizontalAlignment="Left" Width="291" />
+        <ProgressBar Height="18" Margin="29,382.032,0,0" Name="ProgressBarWrite" VerticalAlignment="Top" HorizontalAlignment="Left" Width="206" />
+        <Button Height="23" Margin="71,341.032,0,0" Name="button_SaveParams" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" Click="Button_SaveParams_Click">Zapis parametrów</Button>
+        <GroupBox Header="Parametry modułu" Margin="29,210.032,0,0" Name="ModuleGroupBox" HorizontalAlignment="Left" Width="206" Height="109" VerticalAlignment="Top" />
+        <Label Height="28" Margin="11.664,55.685,0,0" x:Name="label1_Copy" VerticalAlignment="Top" HorizontalAlignment="Left" Width="51" Content="Uart 2"/>
+        <ComboBox Height="23" Margin="65.664,55.685,0,0" x:Name="comboBoxPorts2" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
+        <Label Height="28" Margin="203.76,19,0,0" x:Name="label1_Copy1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="98.904" Content="Sink / Server"/>
+        <Label Height="28" Margin="203.76,53.017,0,0" x:Name="label1_Copy2" VerticalAlignment="Top" HorizontalAlignment="Left" Width="98.904" Content="Source / Client"/>
+        <RadioButton Content="App1" HorizontalAlignment="Left" Margin="146.286,106.991,0,0" VerticalAlignment="Top" Width="108.333"/>
+        <RadioButton Content="App3" HorizontalAlignment="Left" Margin="146.286,123.641,0,0" VerticalAlignment="Top" Width="108.333"/>
+        <RadioButton Content="App?" HorizontalAlignment="Left" Margin="146.286,141.617,0,0" VerticalAlignment="Top" Width="108.333"/>
+    </Grid>
 </Window>

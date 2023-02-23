@@ -5,7 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Windows;
 
-namespace Modbus_Programmer
+namespace CliConfigurator
 {
 	/// <summary>
 	/// Interaction logic for App.xaml

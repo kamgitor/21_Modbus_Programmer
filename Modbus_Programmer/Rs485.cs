@@ -7,8 +7,9 @@ using System.Windows.Controls;
 using System.IO.Ports;
 
 
-namespace Modbus_Programmer
+namespace CliConfigurator
 {
+	/*
 	class Rs485 : SerialPortGeneric
 	{
 		private byte crc_l;
@@ -130,4 +131,5 @@ namespace Modbus_Programmer
 
 
 	}
+	*/
 }

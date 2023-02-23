@@ -12,7 +12,7 @@ using System.Threading;				// Watki Thread
 // using System.Timers;				// Timery
 
 
-namespace Modbus_Programmer
+namespace CliConfigurator
 {
 	delegate void rx_funct_process();
 
@@ -44,7 +44,29 @@ namespace Modbus_Programmer
 
 			serial.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(rx_handler_funct);
 
-		}	// SerialPortGeneric
+		}   // SerialPortGeneric
+
+
+		// ***************************************************************
+		public bool SetPortInCombo(string port)
+		{
+			int offset = 0;
+			var coms = combobox.Items;
+			bool err = true;
+			foreach (var com in coms)
+			{
+				if (com.ToString() == port)
+				{
+					err = false;
+					break;
+				}
+				++offset;
+			}
+
+			combobox.SelectedIndex = offset;
+			return err;
+
+		}   // SetComboPort
 
 
 		// ***************************************************************************
