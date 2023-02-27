@@ -70,6 +70,7 @@
     </Compile>
     <Compile Include="CliDisputant.cs" />
     <Compile Include="CliPort.cs" />
+    <Compile Include="ConsoleManager.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

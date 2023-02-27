@@ -5,7 +5,7 @@
     <Grid>
         <Label Height="28" Margin="11.664,19,0,0" x:Name="label1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="51" Content="Uart 1"/>
         <ComboBox Height="23" Margin="65.664,19,0,0" x:Name="comboBoxPorts1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
-        <Button Height="51.667" Margin="30.329,105.688,0,0" x:Name="button_ReadParams" VerticalAlignment="Top" Click="Button_SendSetOfCommand_Click" HorizontalAlignment="Left" Width="88" Content="Send set of&#xD;&#xA;commands"/>
+        <Button Height="23" Margin="28.328,105.688,0,0" x:Name="button_Prepare" VerticalAlignment="Top" Click="Button_Prepare_Click" HorizontalAlignment="Left" Width="88" Content="Prepare"/>
         <ComboBox Margin="71,239.032,0,0" Name="ComboBoxBaud" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120">
             <ComboBoxItem>2400</ComboBoxItem>
             <ComboBoxItem>9600</ComboBoxItem>
@@ -25,5 +25,6 @@
         <RadioButton Content="App1" HorizontalAlignment="Left" Margin="146.286,106.991,0,0" VerticalAlignment="Top" Width="108.333"/>
         <RadioButton Content="App3" HorizontalAlignment="Left" Margin="146.286,123.641,0,0" VerticalAlignment="Top" Width="108.333"/>
         <RadioButton Content="App?" HorizontalAlignment="Left" Margin="146.286,141.617,0,0" VerticalAlignment="Top" Width="108.333"/>
+        <Button Height="23" Margin="28.328,135.036,0,0" x:Name="button_Start" VerticalAlignment="Top" Click="Button_Start_Click" HorizontalAlignment="Left" Width="88" Content="Start"/>
     </Grid>
 </Window>

@@ -12,10 +12,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using System.Diagnostics;
+// using System.Diagnostics;			// Trace
 
 using System.Threading;				// Watki Thread
 using System.Windows.Threading;
+
+using Console_Manager;
 
 namespace CliConfigurator
 {
@@ -65,14 +67,16 @@ namespace CliConfigurator
 			// NU for now
 			CliDisp = new CliDisputant(Cli1, Cli2);
 
+			ConsoleManager.Show();
+			Console.WriteLine("HELLO");
+			Console.WriteLine("Reset both boards");
+
 		}   // AppInit
 
 
 		// ***************************************************************
-		private void Button_SendSetOfCommand_Click(object sender, RoutedEventArgs e)
-		{
-			button_ReadParams.Visibility = Visibility.Hidden;
-
+		private bool AreComboParamsSelected()
+        {
 			if ((comboBoxPorts1.SelectedIndex != -1) && (comboBoxPorts2.SelectedIndex != -1))
 			{
 				Cli1.BaudRate = 115200;
@@ -81,15 +85,68 @@ namespace CliConfigurator
 				Cli2.BaudRate = 115200;
 				Cli2.PreparePort();
 
-				Cli1.TxRxStartProcess(ReadParamsProcess);
+				return true;
 			}
 			else
 			{
 				MessageBox.Show("Select serial ports", "Info");
-				button_ReadParams.Visibility = Visibility.Visible;
+				return false;
 			}
 
-		}   // AppInit
+		}   // AreComboParamsSelected
+
+
+		// ***************************************************************
+		private bool ClosePorts()
+        {
+			Cli1.ClosePort();
+			Cli2.ClosePort();
+
+			return true;
+
+		}   // ClosePorts
+
+
+		// ***************************************************************
+		private void ButtonsShow(bool state)
+        {
+			if (state)
+            {
+				button_Prepare.Visibility = Visibility.Visible;
+				button_Start.Visibility = Visibility.Visible;
+			}
+			else
+            {
+				button_Prepare.Visibility = Visibility.Hidden;
+				button_Start.Visibility = Visibility.Hidden;
+			}
+        }
+
+		// ***************************************************************
+		private void Button_Prepare_Click(object sender, RoutedEventArgs e)
+		{
+			ButtonsShow(false);
+			Console.Clear();
+
+			if (AreComboParamsSelected())
+				Cli1.TxRxStartProcess(App3PrepareProcess);
+
+			ButtonsShow(true);
+
+		}   // Button_Prepare_Click
+
+
+		// ***************************************************************
+		private void Button_Start_Click(object sender, RoutedEventArgs e)
+		{
+			ButtonsShow(false);
+
+			if (AreComboParamsSelected())
+				Cli1.TxRxStartProcess(App3StartProcess);
+
+			ButtonsShow(true);
+
+		}   // Button_Start_Click
 
 
 		// ***************************************************************************
@@ -117,6 +174,8 @@ namespace CliConfigurator
 				MessageBox.Show("Wybierz port szeregowy", "Informacja");
 				button_SaveParams.Visibility = Visibility.Visible;
 			}
+
+			ClosePorts();
 
 		}   // Button_SaveParams_Click
 
@@ -168,79 +227,141 @@ namespace CliConfigurator
 
 
 		// ***************************************************************************
-		private void ReadParamsProcess()
+		private void App3PrepareProcess()
 		{
-			bool success = true;
-
-			// #define		MODBUS_BAUD_DEFAULT				1		// 9600
-			// #define		MODBUS_ADDRESS_DEFAULT			1
-
-			// 0		MODBUS_BROADCAST_ADDRESS		255
-			// 1		Read Holgind Register
-			// 2		Start addres hi
-			// 3		Start addres lo
-			// 4		No of points hi		(16bit data)
-			// 5		No of points lo
-			// 6		crc l
-			// 7		crc h
-
-
-			bool ret;
+			bool success = false;
 			string rxbuf;
-			string rxbuf2;
 			string dev_number;
 
-			ret = CliSendCommand(Cli2, "1 1\n", 2000, out rxbuf, 10);
+			do
+			{
+				// SOURCE
+				if (CliSendCommand(Cli2, "1 1\n", 200, out rxbuf, 5) == false)
+					break;
 
-			Trace.WriteLine(rxbuf);
-			Trace.WriteLine("*************************************************************** 1");
-			ret = CliSendCommand(Cli2, "1 0\n", 2000, out rxbuf2, 20);
-			ret = CliGetDeviceNumber(rxbuf2, out dev_number);
-			Trace.WriteLine(rxbuf2);
-			Trace.WriteLine("*************************************************************** 2");
+				if (CliSendCommand(Cli2, "1 0\n", 3000, out rxbuf, 10) == false)
+					break;
 
+				if (CliGetDeviceNumber(rxbuf, out dev_number) == false)
+					break;
 
+				decimal value;
+				if (Decimal.TryParse(dev_number, out value) == false)
+					break;
+				
+				if (CliSendCommand(Cli2, "5 " + dev_number + "\n", 1000, out rxbuf, 15) == false)
+					break;
 
-			// test
-			ret = CliSendCommand(Cli1, "27\n", 1000, out rxbuf, 10);
+				if (CliSendCommand(Cli2, "3\n", 3000, out rxbuf, 20) == false)
+					break;
 
+				if (CliSendCommand(Cli2, "20 1 4\n", 1000, out rxbuf, 25) == false)
+					break;
 
+				if (CliSendCommand(Cli2, "37\n", 100, out rxbuf, 30) == false)
+					break;
 
-			/*
-			if (AskModbusModule(2400, 20) == false)
-				if (AskModbusModule(9600, 40) == false)
-					if (AskModbusModule(19200, 60) == false)
-						if (AskModbusModule(57600, 80) == false)
-							if (AskModbusModule(115200, 100) == false)
-								success = false;
-		*/
+				if (CliSendCommand(Cli2, "3\n", 100, out rxbuf, 35) == false)
+					break;
 
-			/*
+				if (CliSendCommand(Cli2, "1\n", 100, out rxbuf, 40) == false)
+					break;
+
+				if (CliSendCommand(Cli2, "22 1 1 1 1 40000\n", 1000, out rxbuf, 45) == false)
+					break;
+
+				if (CliSendCommand(Cli2, "23 1 1\n", 1000, out rxbuf, 50) == false)
+					break;
+
+				// SINK
+				if (CliSendCommand(Cli1, "26\n", 1000, out rxbuf, 55) == false)
+					break;
+
+				if (CliSendCommand(Cli1, "7 1 1 0", 1000, out rxbuf, 60) == false)
+					break;
+
+				// SOURCE
+				if (CliSendCommand(Cli2, "37\n", 1000, out rxbuf, 65) == false)
+					break;
+
+				if (CliSendCommand(Cli2, "5 1 1 0\n", 1000, out rxbuf, 70) == false)
+					break;
+
+				// SINK
+				if (CliSendCommand(Cli1, "\n", 500, out rxbuf, 75) == false)
+					break;
+
+				if (CliSendCommand(Cli1, "18 1 0 4\n", 1000, out rxbuf, 80) == false)
+					break;
+
+				// SOURCE
+				if (CliSendCommand(Cli2, "18 0 0 4\n", 1000, out rxbuf, 85) == false)
+					break;
+
+				if (CliSendCommand(Cli2, "1\n", 100, out rxbuf, 90) == false)
+					break;
+
+				if (CliSendCommand(Cli2, "38\n", 1000, out rxbuf, 90) == false)
+					break;
+
+				if (CliSendCommand(Cli2, "5 1\n", 1000, out rxbuf, 95) == false)
+					break;
+
+				if (CliSendCommand(Cli2, "6 1 4 2 1 2\n", 1000, out rxbuf, 100) == false)
+					break;
+
+				success = true;
+
+			} while (false);
+
 			if (success)
-			{
-				PresentReadParams();
-				HideProgressBars();
-			}
+				Console.WriteLine("SUCCESS");
 			else
-			{
-				MessageBox.Show("Nie znaleziono urządzeń", "Informacja");
-				InitControlHide();
-			}
-			*/
+				Console.WriteLine("FAIL");
 
+			ClosePorts();
+
+			// MessageBox.Show("Nie znaleziono urządzeń", "Informacja");
+
+
+
+			/*
+			????????? No idea is this OK
 			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate ()
 			{
-				button_ReadParams.Visibility = Visibility.Visible;
+				button_Prepare.Visibility = Visibility.Visible;
 			});
+			*/
 
 		}   // ReadParamsProcess
 
 
-		private bool CliSendCommand(CliPort cli, string frame, int timeout, out string rxbuf, byte progress)
+		// ***************************************************************************
+		private void App3StartProcess()
+        {
+			string rxbuf;
+
+			do
+			{
+				// SOURCE
+				if (CliSendCommand(Cli2, "7 10000 16000 1\n", 1000, out rxbuf, 100) == false)
+					break;
+
+			} while (false);
+
+			ClosePorts();
+
+		}   // App3StartProcess
+
+
+		// ***************************************************************************
+			private bool CliSendCommand(CliPort cli, string frame, int timeout, out string rxbuf, byte progress)
 		{
 			byte[] rx_buf;
 			int size;
 			bool ret;
+
+			rxbuf = "";
 
 			this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate ()
 			{
@@ -252,13 +373,28 @@ namespace CliConfigurator
 			cli.SendFrame(Encoding.ASCII.GetBytes(frame));
 			ret = cli.ReceiveFrame(timeout, out rx_buf, out size);
 
-			rxbuf = System.Text.Encoding.Default.GetString(rx_buf);
+			if (rx_buf != null)
+			{
+				rxbuf = System.Text.Encoding.Default.GetString(rx_buf);
+
+				Console.ForegroundColor = ConsoleColor.White;
+				Console.WriteLine(rxbuf);
+				Console.ForegroundColor = ConsoleColor.Green;
+				Console.WriteLine("***************************************************************");
+			}
+			else
+            {
+				Console.WriteLine("***************************************************************");
+				Console.WriteLine("rx_buf is null");
+				return false;
+			}
 
 			return ret;
 
 		}   // CliSendCommand
 
 
+		// ***************************************************************************
 		private bool CliGetDeviceNumber(string console_data, out string dev_num)
 		{
 			dev_num = "";
@@ -274,12 +410,13 @@ namespace CliConfigurator
                 {
 					string[] str_tab2 = s.Split(':');
 					dev_num = str_tab2[0];
-					break;
+					if (dev_num != "  AD Name")
+						return true;
 				}
             }
+			return false;
 
-			return true;
-		}
+		}   // CliGetDeviceNumber
 
 
 		// ***************************************************************************
@@ -369,7 +506,6 @@ namespace CliConfigurator
 			if (ret == false)
 				MessageBox.Show("Nie znaleziono urządzenia", "Informacja");
 
-			
 			rs_speed = rs_new_speed;		// zeby przy zmianie adresu dzialo dwukrotne wcisniecie zapis
 
 			HideProgressBars();
@@ -379,13 +515,10 @@ namespace CliConfigurator
 				button_SaveParams.Visibility = Visibility.Visible;
 			});
 
-		}	// WriteParamsProcess
+		}   // WriteParamsProcess
 
 
-
-
-
-		/*
+        /*
 		// ***************************************************************************
 		void rx_function(byte [] buf, int size)
 		{
@@ -394,6 +527,6 @@ namespace CliConfigurator
 		}	// SerialPort
 		*/
 
-	}
+    }
 
 }

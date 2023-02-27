@@ -6,7 +6,8 @@ using System.Text;
 using System.Windows.Controls;
 using System.IO.Ports;
 
-using System.Threading;				// Watki Thread
+using System.Threading;             // Watki Thread
+using System.Windows;
 // using System.Windows.Threading;
 
 // using System.Timers;				// Timery
@@ -132,6 +133,9 @@ namespace CliConfigurator
 
 			int iReaded = serial.Read(buffer, 0, rx_size);
 
+			if (rx_buffer == null)	// rx_buffer not inited, received serial data before send
+				return;
+
 			for (int i = 0; i < rx_size; i++)
 			{
 				rx_buffer.Enqueue(buffer[i]);
@@ -233,15 +237,31 @@ namespace CliConfigurator
 			if (combobox.SelectedIndex != -1)
 			{
 				serial.PortName = (string)combobox.Items[combobox.SelectedIndex];
-				serial.Open();
+				try
+				{
+					serial.Open();
+				}
+                catch
+				{
+					MessageBox.Show(serial.PortName + " unavailable", "Info");
+					return false;
+				}
 
 				return true;
 			}
 			else
 				return false;		// not selected
 
-		}	// GetComboboxPos
+		}   // GetComboboxPos
 
+		// ***************************************************************************
+		public bool ClosePort()
+        {
+			if (serial.IsOpen)
+				serial.Close();
+
+			return true;
+		}
 
 		/*
 
