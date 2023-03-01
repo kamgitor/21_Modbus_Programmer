@@ -22,9 +22,8 @@
         <ComboBox Height="23" Margin="65.664,55.685,0,0" x:Name="comboBoxPorts2" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" />
         <Label Height="28" Margin="203.76,19,0,0" x:Name="label1_Copy1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="98.904" Content="Sink / Server"/>
         <Label Height="28" Margin="203.76,53.017,0,0" x:Name="label1_Copy2" VerticalAlignment="Top" HorizontalAlignment="Left" Width="98.904" Content="Source / Client"/>
-        <RadioButton Content="App1" HorizontalAlignment="Left" Margin="146.286,106.991,0,0" VerticalAlignment="Top" Width="108.333"/>
-        <RadioButton Content="App3" HorizontalAlignment="Left" Margin="146.286,123.641,0,0" VerticalAlignment="Top" Width="108.333"/>
-        <RadioButton Content="App?" HorizontalAlignment="Left" Margin="146.286,141.617,0,0" VerticalAlignment="Top" Width="108.333"/>
+        <RadioButton x:Name="RadioApp1" Content="App1" HorizontalAlignment="Left" Margin="146.286,106.991,0,0" VerticalAlignment="Top" Width="108.333"/>
+        <RadioButton x:Name="RadioApp3" Content="App3" HorizontalAlignment="Left" Margin="146.286,123.641,0,0" VerticalAlignment="Top" Width="108.333"/>
         <Button Height="23" Margin="28.328,135.036,0,0" x:Name="button_Start" VerticalAlignment="Top" Click="Button_Start_Click" HorizontalAlignment="Left" Width="88" Content="Start"/>
     </Grid>
 </Window>

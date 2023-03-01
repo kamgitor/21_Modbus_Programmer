@@ -30,6 +30,16 @@ namespace CliConfigurator
 		CliPort Cli1;
 		CliPort Cli2;
 
+		private enum app
+		{
+			zero,
+			one,
+			two,
+			three,
+		}
+
+		app AppNumber;
+
 		CliDisputant CliDisp;
 
 		byte rs_speed;
@@ -56,6 +66,8 @@ namespace CliConfigurator
 		// ***************************************************************
 		public void AppInit()
 		{
+			RadioApp3.IsChecked = true;
+
 			Cli1 = new CliPort(comboBoxPorts1);
 			Cli2 = new CliPort(comboBoxPorts2);
 
@@ -120,16 +132,52 @@ namespace CliConfigurator
 				button_Prepare.Visibility = Visibility.Hidden;
 				button_Start.Visibility = Visibility.Hidden;
 			}
-        }
+		
+		}   // ButtonsShow
+
+
+		// ***************************************************************
+		private app GetAppNumber()
+        {
+			if (RadioApp1.IsChecked == true)
+				return app.one;
+
+			if (RadioApp3.IsChecked == true)
+				return app.three;
+
+			return app.zero;
+
+		}	// GetAppNumber
+
 
 		// ***************************************************************
 		private void Button_Prepare_Click(object sender, RoutedEventArgs e)
 		{
-			ButtonsShow(false);
-			Console.Clear();
+			AppNumber = GetAppNumber();
 
-			if (AreComboParamsSelected())
-				Cli1.TxRxStartProcess(App3PrepareProcess);
+			ButtonsShow(false);
+			try
+			{
+				Console.Clear();		// It crashes in debug mode
+			}
+			catch { }
+
+			switch (AppNumber)
+			{
+				case app.one:
+					
+					if (AreComboParamsSelected())
+						Cli1.TxRxStartProcess(App1PrepareProcess);
+					
+					break;
+
+			case app.three:
+
+				if (AreComboParamsSelected())
+					Cli1.TxRxStartProcess(App3PrepareProcess);
+				
+					break;
+			}
 
 			ButtonsShow(true);
 
@@ -141,8 +189,26 @@ namespace CliConfigurator
 		{
 			ButtonsShow(false);
 
-			if (AreComboParamsSelected())
-				Cli1.TxRxStartProcess(App3StartProcess);
+
+			switch (AppNumber)
+			{
+				case app.one:
+					if (AreComboParamsSelected())
+						Cli1.TxRxStartProcess(App1StartProcess);
+
+					break;
+
+				case app.three:
+
+					if (AreComboParamsSelected())
+						Cli1.TxRxStartProcess(App3StartProcess);
+
+					break;
+			}
+
+
+
+
 
 			ButtonsShow(true);
 
@@ -227,6 +293,80 @@ namespace CliConfigurator
 
 
 		// ***************************************************************************
+		private void App1PrepareProcess()
+        {
+			bool success = false;
+			string rxbuf;
+			string dev_number;
+
+			do
+			{
+				// SOURCE
+				if (CliSendCommand(Cli2, "11 1\n", 200, out rxbuf, 10) == false)
+					break;
+
+				// SINK
+				if (CliSendCommand(Cli1, "2 1\n", 2000, out rxbuf, 20) == false)
+					break;
+
+				// SINK
+				if (CliSendCommand(Cli1, "2 0\n", 3000, out rxbuf, 40) == false)
+					break;
+
+				if (CliGetDeviceNumber(rxbuf, out dev_number, "App1_Source") == false)
+					break;
+
+				decimal value;
+				if (Decimal.TryParse(dev_number, out value) == false)
+					break;
+
+				if (CliSendCommand(Cli1, "7\n", 200, out rxbuf, 50) == false)
+					break;
+
+				if (CliSendCommand(Cli1, "5 0 " + dev_number + " 1\n", 1000, out rxbuf, 80) == false)
+					break;
+
+				if (CliSendCommand(Cli1, "1\n", 200, out rxbuf, 90) == false)
+					break;
+
+				if (CliSendCommand(Cli1, "2 1\n", 2000, out rxbuf, 100) == false)
+					break;
+
+				success = true;
+
+			} while (false);
+
+			if (success)
+				Console.WriteLine("SUCCESS");
+			else
+				Console.WriteLine("FAIL");
+
+			ClosePorts();
+
+		}   // App1PrepareProcess
+
+
+		// ***************************************************************************
+		private void App1StartProcess()
+		{
+			bool success = false;
+			string rxbuf;
+			string dev_number;
+
+			do
+			{
+				// SOURCE
+				if (CliSendCommand(Cli2, "12\n", 200, out rxbuf, 100) == false)
+					break;
+
+			} while (false);
+
+			ClosePorts();
+
+		}   // App1PrepareProcess
+
+
+		// ***************************************************************************
 		private void App3PrepareProcess()
 		{
 			bool success = false;
@@ -242,7 +382,7 @@ namespace CliConfigurator
 				if (CliSendCommand(Cli2, "1 0\n", 3000, out rxbuf, 10) == false)
 					break;
 
-				if (CliGetDeviceNumber(rxbuf, out dev_number) == false)
+				if (CliGetDeviceNumber(rxbuf, out dev_number, "App3_Server") == false)
 					break;
 
 				decimal value;
@@ -395,7 +535,7 @@ namespace CliConfigurator
 
 
 		// ***************************************************************************
-		private bool CliGetDeviceNumber(string console_data, out string dev_num)
+		private bool CliGetDeviceNumber(string console_data, out string dev_num, string app_server_name)
 		{
 			dev_num = "";
 
@@ -406,7 +546,7 @@ namespace CliConfigurator
 
 			foreach (string s in str_tab)
             {
-				if (s.EndsWith("App3_Server"))
+				if (s.EndsWith(app_server_name))
                 {
 					string[] str_tab2 = s.Split(':');
 					dev_num = str_tab2[0];
