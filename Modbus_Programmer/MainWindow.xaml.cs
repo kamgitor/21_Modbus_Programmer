@@ -18,6 +18,7 @@ using System.Threading;				// Watki Thread
 using System.Windows.Threading;
 
 using Console_Manager;
+using System.Configuration;
 
 namespace CliConfigurator
 {
@@ -38,7 +39,14 @@ namespace CliConfigurator
 			three,
 		}
 
-		app AppNumber;
+		struct cfg_t
+		{
+			public app AppNumber;
+			public string com1;
+			public string com2;
+		};
+
+		private cfg_t cfg = new cfg_t();
 
 		CliDisputant CliDisp;
 
@@ -64,6 +72,61 @@ namespace CliConfigurator
 
 
 		// ***************************************************************
+		public void LoadAppConfig()
+        {
+			cfg.com1 = ConfigurationManager.AppSettings["com1"];
+			if (cfg.com1 == null)
+				ConfigurationManager.AppSettings["com1"] = "COM35";
+
+			cfg.com2 = ConfigurationManager.AppSettings["com2"];
+			if (cfg.com2 == null)
+				ConfigurationManager.AppSettings["com2"] = "COM36";
+
+			string ap_num = ConfigurationManager.AppSettings["app_num"];
+			if (ap_num == null)
+				ConfigurationManager.AppSettings["app_num"] = "1";	// app1
+
+			switch (ap_num)
+            {
+				case "1":
+					cfg.AppNumber = app.one;
+					break;
+				case "3":
+					cfg.AppNumber = app.three;
+					break;
+				default:
+					cfg.AppNumber = app.one;
+					break;
+            }
+
+		}   // LoadAppConfig
+
+
+		// ***************************************************************
+		public void SaveAppConfig()
+        {
+			ConfigurationManager.AppSettings["com1"] = cfg.com1;
+			ConfigurationManager.AppSettings["com2"] = cfg.com2;
+
+			string ap_num;
+			switch (cfg.AppNumber)
+			{
+				case app.one:
+					ap_num = "1";
+					break;
+				case app.three:
+					ap_num = "3";
+					break;
+				default:
+					ap_num = "1";
+					break;
+			}
+			ConfigurationManager.AppSettings["app_num"] = ap_num;
+
+		}   // SaveAppConfig
+
+
+		// ***************************************************************
 		public void AppInit()
 		{
 			RadioApp3.IsChecked = true;
@@ -71,10 +134,11 @@ namespace CliConfigurator
 			Cli1 = new CliPort(comboBoxPorts1);
 			Cli2 = new CliPort(comboBoxPorts2);
 
-			Cli1.SetPortInCombo("COM35");
-			Cli2.SetPortInCombo("COM36");
+			LoadAppConfig();
 
-			// Cli1.SetPortInCombo("COM2");
+			Cli1.SetPortInCombo(cfg.com1);
+			Cli2.SetPortInCombo(cfg.com2);
+			SetAppNumber(cfg.AppNumber);
 
 			// NU for now
 			CliDisp = new CliDisputant(Cli1, Cli2);
@@ -84,6 +148,8 @@ namespace CliConfigurator
 			Console.WriteLine("Reset both boards");
 
 		}   // AppInit
+
+
 
 
 		// ***************************************************************
@@ -147,13 +213,36 @@ namespace CliConfigurator
 
 			return app.zero;
 
-		}	// GetAppNumber
+		}   // GetAppNumber
+
+
+		// ***************************************************************
+		private void SetAppNumber(app ap_num)
+        {
+			RadioApp1.IsChecked = false;
+			RadioApp3.IsChecked = false;
+
+			if (ap_num == app.one)
+			{
+				RadioApp1.IsChecked = true;
+				return;
+			}
+
+			if (ap_num == app.three)
+			{
+				RadioApp3.IsChecked = true;
+				return;
+			}
+
+		}   // SetAppNumber
 
 
 		// ***************************************************************
 		private void Button_Prepare_Click(object sender, RoutedEventArgs e)
 		{
-			AppNumber = GetAppNumber();
+			cfg.AppNumber = GetAppNumber();
+
+			this.
 
 			ButtonsShow(false);
 			try
@@ -162,7 +251,7 @@ namespace CliConfigurator
 			}
 			catch { }
 
-			switch (AppNumber)
+			switch (cfg.AppNumber)
 			{
 				case app.one:
 					
@@ -190,7 +279,7 @@ namespace CliConfigurator
 			ButtonsShow(false);
 
 
-			switch (AppNumber)
+			switch (cfg.AppNumber)
 			{
 				case app.one:
 					if (AreComboParamsSelected())
@@ -205,10 +294,6 @@ namespace CliConfigurator
 
 					break;
 			}
-
-
-
-
 
 			ButtonsShow(true);
 
@@ -349,9 +434,7 @@ namespace CliConfigurator
 		// ***************************************************************************
 		private void App1StartProcess()
 		{
-			bool success = false;
 			string rxbuf;
-			string dev_number;
 
 			do
 			{

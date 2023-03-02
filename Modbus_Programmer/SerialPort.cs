@@ -184,9 +184,9 @@ namespace CliConfigurator
 		{
 			buf = AnaliseTxFrame(buf);
 			serial.Write(buf, 0, buf.Length);
-			int timer = 0;
+						
+			/*int timer = 0;
 
-			/*
 			// To nie dziala
 			while (serial.BytesToWrite != 0)
 			{
