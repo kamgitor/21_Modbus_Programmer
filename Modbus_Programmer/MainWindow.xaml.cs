@@ -74,17 +74,34 @@ namespace CliConfigurator
 		// ***************************************************************
 		public void LoadAppConfig()
         {
+			/*	Witek settings
+			Properties.Settings.Default.myColor = "COM5";
+			Properties.Settings.Default.Save();
+			*/
+
+
 			cfg.com1 = ConfigurationManager.AppSettings["com1"];
 			if (cfg.com1 == null)
-				ConfigurationManager.AppSettings["com1"] = "COM35";
+			{
+				cfg.com1 = "COM5";
+				ConfigurationManager.AppSettings["com1"] = cfg.com1;
+			}
+
+			cfg.com1 = ConfigurationManager.AppSettings["com1"];
 
 			cfg.com2 = ConfigurationManager.AppSettings["com2"];
 			if (cfg.com2 == null)
-				ConfigurationManager.AppSettings["com2"] = "COM36";
+			{
+				cfg.com2 = "COM6";
+				ConfigurationManager.AppSettings["com2"] = cfg.com2;
+			}
 
 			string ap_num = ConfigurationManager.AppSettings["app_num"];
 			if (ap_num == null)
-				ConfigurationManager.AppSettings["app_num"] = "1";	// app1
+			{
+				ap_num = "3";
+				ConfigurationManager.AppSettings["app_num"] = ap_num;
+			}
 
 			switch (ap_num)
             {
@@ -105,6 +122,9 @@ namespace CliConfigurator
 		// ***************************************************************
 		public void SaveAppConfig()
         {
+			cfg.com1 = Cli1.GetPortInCombo();
+			cfg.com2 = Cli2.GetPortInCombo();
+
 			ConfigurationManager.AppSettings["com1"] = cfg.com1;
 			ConfigurationManager.AppSettings["com2"] = cfg.com2;
 
@@ -135,6 +155,7 @@ namespace CliConfigurator
 			Cli2 = new CliPort(comboBoxPorts2);
 
 			LoadAppConfig();
+			((App)Application.Current).AppExit = new App.AppExitDelegate(SaveAppConfig);
 
 			Cli1.SetPortInCombo(cfg.com1);
 			Cli2.SetPortInCombo(cfg.com2);
@@ -487,10 +508,10 @@ namespace CliConfigurator
 				if (CliSendCommand(Cli2, "3\n", 100, out rxbuf, 35) == false)
 					break;
 
-				if (CliSendCommand(Cli2, "1\n", 100, out rxbuf, 40) == false)
+				if (CliSendCommand(Cli2, "1\n", 500, out rxbuf, 40) == false)
 					break;
 
-				if (CliSendCommand(Cli2, "22 1 1 1 1 40000\n", 1000, out rxbuf, 45) == false)
+				if (CliSendCommand(Cli2, "22 1 1 1 1 40000\n", 5000, out rxbuf, 45) == false)
 					break;
 
 				if (CliSendCommand(Cli2, "23 1 1\n", 1000, out rxbuf, 50) == false)

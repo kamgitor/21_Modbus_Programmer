@@ -12,5 +12,15 @@ namespace CliConfigurator
 	/// </summary>
 	public partial class App : Application
 	{
-	}
+
+        public delegate void AppExitDelegate();
+        public AppExitDelegate AppExit;
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+
+            AppExit();
+        }
+
+    }
 }

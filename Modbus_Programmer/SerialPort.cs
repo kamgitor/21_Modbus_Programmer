@@ -30,7 +30,7 @@ namespace CliConfigurator
 		// private STATUS rx_status = STATUS.IDLE;
 
 		// rx data
-		protected Queue<byte> rx_buffer = null;		// Kolejka odbiorcza
+		protected Queue<byte> rx_buffer = null;		// new Queue<byte>();		// TEST null;		// Kolejka odbiorcza
 		// private rx_ext_funct rx_funct;
 
 		// ***************************************************************************
@@ -70,6 +70,19 @@ namespace CliConfigurator
 		}   // SetComboPort
 
 
+		// ***************************************************************
+		public string GetPortInCombo()
+		{
+			if (combobox.SelectedIndex != -1)
+			{
+				return (string)combobox.Items[combobox.SelectedIndex];
+			}
+			else
+			{
+				return "";
+			}
+		}
+
 		// ***************************************************************************
 		// Analizowanie ramki wysylanej, w generic - przezroczyste
 		protected virtual byte[] AnaliseTxFrame(byte[] buf)
@@ -96,9 +109,10 @@ namespace CliConfigurator
 		{
 			rx_buf = null;
 			rx_size = 0;
+			bool ret;
 
 			// rx_status = STATUS.IDLE;
-			rx_buffer = new Queue<byte>();
+			rx_buffer = new Queue<byte>();		// TEST
 
 			timer = new System.Timers.Timer();
 			timer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimerEvent);
@@ -114,12 +128,15 @@ namespace CliConfigurator
 				rx_buf = rx_buffer.ToArray();
 				rx_size = rx_buffer.Count;
 				if (AnaliseRxFrame(rx_buf) == true)
-					return true;
+					ret = true;    //  return true;
 				else
-					return false;		// crc error
+					ret = false;    //  return false;       // crc error
 			}
 			else
-				return false;
+				ret = false;	//  return false;
+
+			rx_buffer = null;
+			return ret;
 
 		}	// ReceiveFrame
 
@@ -133,8 +150,14 @@ namespace CliConfigurator
 
 			int iReaded = serial.Read(buffer, 0, rx_size);
 
-			if (rx_buffer == null)	// rx_buffer not inited, received serial data before send
-				return;
+			/*
+			if (rx_buffer == null)  // rx_buffer not inited, received serial data before send
+			{
+				rx_buffer = new Queue<byte>();      // TEST
+				// return;
+			}
+			*/
+			
 
 			for (int i = 0; i < rx_size; i++)
 			{
